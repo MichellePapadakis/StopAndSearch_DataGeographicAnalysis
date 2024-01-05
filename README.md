@@ -1,4 +1,4 @@
-# MY472_SS_analysis
+# MY472_PSF
 # Descriptive Analysis of Stops and Searches in London
 
 ## Repository Overview
