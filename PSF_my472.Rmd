@@ -865,6 +865,7 @@ map_ratio_nonwhite_total <- leaflet(boroughs_map_sf) %>%
 
 ```
 
+**This repository is hosted on GitHub Page and can be accessed [here](https://github.com/MichellePapadakis/MY472_PSF)**
 
 ## Introduction
 This project aims to approach the question of whether there are biases in who experiences stop and search by the police. Under the Police and Criminal Evidence Act 1984, officers can stop and search individuals if there are reasonable grounds of suspicion. However, evidence suggests disproportionate targeting of certain ethnic groups (HMICFRS, 2013 and 2021), raising concerns about police credibility and the marginalization of minority groups (Bradford and Loader, 2015).
@@ -971,9 +972,6 @@ _Map 6 White Stops and Searches per total of white inhabitants per Borough._
 
 #### Final considerations
 Although this is a descriptive analysis, it shows bias in who experiences more stops and searches, and that this bias persists across all the variables analyzed and is accentuated in some boroughs, mainly those in central London. This suggests that there is a racial bias in the application of this policy towards non white people, and that this bias remains even when the basis for comparison is changed, contrary to some police narratives.
-
-
-
 
 ### References
 * Data Police UK API (2023). Stop and Search Data. Consulted on 2023-12-20.Available at https://data.police.uk/docs/
