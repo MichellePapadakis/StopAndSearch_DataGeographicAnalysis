@@ -3,7 +3,10 @@
 
 ## Repository Overview
 
-This repository contains an R Markdown (`.Rmd`) file dedicated to performing a Descriptive Analysis of Stops and Searches within London.
+- This repository contains an R Markdown (`.Rmd`) file dedicated to performing a Descriptive Analysis of Stops and Searches within London.
+- It also contains the final output as (`.html`) file. With a short report of 754 words about the most relevant findinds.
+- A `data` folder to replicate the interactive maps when running the code.
+
 
 ### Data Folder
 
