@@ -456,7 +456,6 @@ top_3_wide <- datatable(top_3_wide,
           caption = "Top three Objects of SS per Ethnicity")
 
 #round the percentage to 2 decimals
-
 #Print the ta
 #top_3_wide
 
@@ -866,35 +865,6 @@ map_ratio_nonwhite_total <- leaflet(boroughs_map_sf) %>%
 
 ```
 
-```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
-
-#cat("Percentage of NA encountered in the self_defined_ethnicity:", per_naself,  "%","\n")
-#cat("Percentage of NA encountered in the officer_defined_ethnicity:", per_naoffi, "%", "\n")
-#cat("Percentage of registers lost because of missing data:", per_na_tot, "%", "\n")
-#cat("Percentage of stops and searches where the officer categorized the suspect as white and the suspect self-identified as non-white", per_mismatch, "%", "\n")
-
-#sumarize_table_all_ss
-#sumarize_table_boroughs_ss
-#age_plot #distribution of age
-#ob_search_perc_facet_interactive
-#top_3_wide #top three objects per search per ethnicity
-#plotoutcome#outcome of stop and searches per ethnicity
-#nfa_plotly #arrest per ethinicy
-#map_total_ss #total of stop and searches per borough
-#cat("The ratio of stop and searches of non-white people in London is", round(ratio_ss_nonwhite_hab, 4), "per 1,000 inhabitants","\n")
-#cat("The ratio of stop and searches of white people in London is", round(ratio_ss_white_hab, 4), "per 1,000 inhabitants","\n")
-#map_ratio_nonwhite_hab #nonwhite ss over  1000 of inhabitants
-# #white  ss of white over 1000 of inhabitants
-#map_ratio_nonwhite_total #nonwhite population ratio over total inhabitants
-#map_ratio_nonwhite #nonwhite over nonwhite inhabitants
-#map_ratio_white #white over white inhabitants
-
-```
-
-```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
-
-
-```
 
 ## Introduction
 This project aims to approach the question of whether there are biases in who experiences stop and search by the police. Under the Police and Criminal Evidence Act 1984, officers can stop and search individuals if there are reasonable grounds of suspicion. However, evidence suggests disproportionate targeting of certain ethnic groups (HMICFRS, 2013 and 2021), raising concerns about police credibility and the marginalization of minority groups (Bradford and Loader, 2015).
@@ -929,7 +899,7 @@ cat("Percentage of stops and searches where the officer categorized the suspect 
 ```
 _Figure 1 NA data encountered in the data base and mismatch in the ethnicity _
 
-A broad analysis of Stop and Search (SS) incidents by ethnicity shows that two-thirds involve non-white individuals. With arrest outcomes, 11% of non-white individuals were arrested, compared to 5% of white individuals. Lambeth had the highest rate of SS on non-white individuals at 85%, while Bexley had the lowest at 39%, both exceeding the rates for white individuals in their respective boroughs (see table 1 and 2). Additionally, top three objects of search maintain between ethnicity, see the breakdown in table 3.
+A broad analysis of SS incidents by ethnicity shows that two-thirds involve non-white individuals. With arrest outcomes, 11% of non-white individuals were arrested, compared to 5% of white individuals. Lambeth had the highest rate of SS on non-white individuals at 85%, vs Bexley with the lowest at 39%, both exceeding the rates for white individuals in their respective boroughs (see table 1 and 2). Additionally, top three objects of search maintain between ethnicity, see the breakdown in table 3.
 
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
@@ -947,7 +917,7 @@ top_3_wide
 ```
 _Table 3 Top three Objects of Search total and per ethnicity (%)._
 
-Age is also relevant, as seen in graph 1, with non-white individuals stopped being typically younger (18 to 24) than their white counterparts (over 34). This age difference may affect youths' perceptions of police, particularly if they are less aware of their rights. Graph 2 shows the arrest rates from SS that are consistently higher for non-white individuals across borougs.
+Age is also relevant with non-white being typically younger (18 to 24) than their white counterparts (over 34), see Graph 1. This may affect youths' perceptions of police, particularly if they are less aware of their rights. Graph 2 shows the arrest rates from SS that are consistently higher for non-white individuals across Boroughs.
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
 age_plot
@@ -966,7 +936,7 @@ map_total_ss
 ```
 _Map 1 Stops and Searches per Borough._
 
-To grasp the phenomenon, it's essential to estimate the SS rate relative to the population. Maps 2 and 3 reveal a higher per capita rate of SS for non-white individuals in all boroughs. Specifically, Westminster has a concentration for non-white , while Camden has a lower comparative rate for white.
+To grasp the phenomenon, it's essential to estimate the SS rate relative to the population. Maps 2 and 3 reveal a higher rate of SS for non-white pero individuals in all boroughs. Specifically, Westminster and Camdem shows a concentration for non-white per inhabitant.
 
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
@@ -986,7 +956,7 @@ map_ratio_nonwhite_total
 ```
 _Map 4 Percentage of non white inhabitants per Borough._
 
-Calculating the ratio of stops and searches (SS) per non-white and white populations shows that non-white individuals are still more affected, and significantly so. This disparity persists regardless of the comparison basis, underscoring a continued unfavorable trend for non-white populations. For detailed visual data, refer to the concluding Maps 5 and 6.
+The ratio of SS per non-white and white populations shows that non-white individuals are still more affected, and significantly so. This disparity persists regardless of the comparison basis, underscoring a continued unfavorable trend for non-white populations. For detailed visual data, refer to the concluding Maps 5 and 6.
 
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
@@ -999,7 +969,7 @@ map_ratio_white
 ```
 _Map 6 White Stops and Searches per total of white inhabitants per Borough._
 
-## Final considerations
+#### Final considerations
 Although this is a descriptive analysis, it shows bias in who experiences more stops and searches, and that this bias persists across all the variables analyzed and is accentuated in some boroughs, mainly those in central London. This suggests that there is a racial bias in the application of this policy towards non white people, and that this bias remains even when the basis for comparison is changed, contrary to some police narratives.
 
 
@@ -1009,7 +979,7 @@ Although this is a descriptive analysis, it shows bias in who experiences more s
 * Data Police UK API (2023). Stop and Search Data. Consulted on 2023-12-20.Available at https://data.police.uk/docs/
 * Bradford, Ben and Loader, Ian, Police, Crime and Order: The Case of Stop and Search (July 29, 2015). Ben Bradford, Beatrice Jauregui, Ian Loader and Jonny Steinberg (eds.) The SAGE Handbook of Global Policing. London: SAGE, summer 2016, Oxford Legal Studies Research Paper No. 44/2015, Available at http://dx.doi.org/10.2139/ssrn.2637361
 * Disproportionate use of police powers – A spotlight on stop and search and the use of force. (26 February, 2021).Available at https://hmicfrs.justiceinspectorates.gov.uk/publications/disproportionate-use-of-police-powers-a-spotlight-on-stop-and-search-and-the-use-of-force/ 
-* Github Repo for the R package to pull police data from the uk police data repository. Consulted on 2023-12-20. Available at https://github.com/njtierney/ukpolice. 
+* Github Repository:R package to pull police data from the uk police data repository. Consulted on 2023-12-20. Available at https://github.com/njtierney/ukpolice. 
 * Joel H Suss, Thiago R Oliveira, Economic Inequality and the Spatial Distribution of Stop and Search: Evidence from London, The British Journal of Criminology, Volume 63, Issue 4, July 2023, Pages 828–847, https://doi.org/10.1093/bjc/azac069 
 * London Datastore (2019). Statistical GIS Boundary Files for London. Consulted on 2023-12-20. Available at https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london
 * Trust for London (2023). Census 2021 deep dive: ethnicity and deprivation in London. Available at https://trustforlondon.org.uk/news/census-2021-deep-dive-ethnicity-and-deprivation-in-london/. 
@@ -1017,6 +987,7 @@ Although this is a descriptive analysis, it shows bias in who experiences more s
 * UK Goverment (2023). Police powers and procedures: Stop and search and arrests, England and Wales, year ending 31 March 2023. Consulted on 2023-12-20. https://www.gov.uk/government/statistics/stop-and-search-and-arrests-year-ending-march-2023/police-powers-and-procedures-stop-and-search-and-arrests-england-and-wales-year-ending-31-march-2023 
 * UK Parlament (2022). Police powers: stop and search. Consulted on 2023-12-20. Available at https://commonslibrary.parliament.uk/research-briefings/sn03878/
 * Wikipedia, London Boroughs. Consulted on 2023-12-20. Available at https://en.wikipedia.org/wiki/List_of_London_boroughs
+
 ## Appendix: All code in this assignment
 
 ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE} 
