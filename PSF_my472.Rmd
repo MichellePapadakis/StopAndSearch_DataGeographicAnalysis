@@ -48,7 +48,9 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 
 ```{r structured_data_scrapping, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-#We scrape the data from the wikipedia page to get the name of the boroughs, the population, the coordinates and the political control, then clean the format and extract the lat and lon from the coordinates. 
+#######################################################################################################################################################
+#To get the wikipedia data of names, population and coordinates per Borough in London
+######################################################################################################################################################
 scrape_structured_data <- function(url) {
   html_content <- read_html(url)
   tab <- html_table(html_content, fill = TRUE)
@@ -78,16 +80,15 @@ boroughs <- boroughs %>%
 
 
 ```{r API_data_scrapping, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-
-#Scrap the data from the data police API, using the the boroughs lat and lon, and the date from october 2022 to october 2023.
-# from the dataframe borough, we use the columns 'Borough', 'lat' y 'lon' for this purpose
+######################################################################################################################################################
+#To get the data from the data police API, using the the boroughs lat and lon, and the date from Oct 2022 to 2023)
+######################################################################################################################################################
 
 get_stop_and_search_data <- function(borough, lat, lon, year_month) {
   response <- GET(
     url = "https://data.police.uk/api/stops-street",
     query = list(lat = lat, lng = lon, date = year_month)
   )
-  
   if (status_code(response) == 200) {
     data <- content(response, "parsed")
     if (!is.null(data) && length(data) > 0) {
@@ -129,14 +130,11 @@ get_stop_and_search_data <- function(borough, lat, lon, year_month) {
     return(tibble())
   }
 }
-
 #create a sequence of dates from october 2022 to october 2023
 date_range <- seq(from = as.Date("2022-10-01"), to = as.Date("2023-10-31"), by = "1 month")
 date_strings <- format(date_range, "%Y-%m")
-
 #initialize an empty tibble to store the data
 all_stops_and_searches <- tibble()
-
 #loop through the boroughs and dates to get the data
 for (i in seq_along(boroughs$Borough)) {
   for (date in date_strings) {
@@ -150,17 +148,15 @@ for (i in seq_along(boroughs$Borough)) {
     all_stops_and_searches <- bind_rows(all_stops_and_searches, borough_data)
   }
 }
-
-
 #Counting na's in the ethnicity columns and counting the total of stops and searches before eliminating the na's
 na_count_self_defined_ethnicity <- sum(is.na(all_stops_and_searches$self_defined_ethnicity))
 na_count_officer_defined_ethnicity <- sum(is.na(all_stops_and_searches$officer_defined_ethnicity))
 countingtotal_stops_and_searches <- nrow(all_stops_and_searches) # Count before eliminating NAs
 all_stops_and_searches <- na.omit(all_stops_and_searches) # Eliminate NAs
 countingtotal_stops_and_searches_after <- nrow(all_stops_and_searches) # Count after eliminating NAs
-per_naself <- round(((na_count_self_defined_ethnicity/countingtotal_stops_and_searches)*100),2)
-per_naoffi <- round(((na_count_officer_defined_ethnicity/countingtotal_stops_and_searches)*100),2)
-per_na_tot <- round(((countingtotal_stops_and_searches - countingtotal_stops_and_searches_after) / countingtotal_stops_and_searches) * 100, 2)
+per_naself <- round(((na_count_self_defined_ethnicity/countingtotal_stops_and_searches)*100),2) #Percentage of na on self_defined ethnicity category over total of registers
+per_naoffi <- round(((na_count_officer_defined_ethnicity/countingtotal_stops_and_searches)*100),2) #Percentage of na on police define ethnicity category over total of registers
+per_na_tot <- round(((countingtotal_stops_and_searches - countingtotal_stops_and_searches_after) / countingtotal_stops_and_searches) * 100, 2) #Percentage of na on total of registers
 
 # Print the values with descriptions in R
 #cat("Number of NA encountered in the self_defined_ethnicity:", na_count_self_defined_ethnicity, "\n")
@@ -171,7 +167,9 @@ per_na_tot <- round(((countingtotal_stops_and_searches - countingtotal_stops_and
 
 
 ```{r API_data_cleaning, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-#Reclassification of ethnicity to 2 categories: White and non-White
+#######################################################################################################################################################
+#Data cleaning: reclassification of data to white and non white and findind the mismatch between self-define and officer defined ethnicity
+######################################################################################################################################################
 all_stops_and_searches <- all_stops_and_searches %>%
   mutate(cat_self_defined_ = case_when(
     self_defined_ethnicity %in% c("Other ethnic group - Any other ethnic group",
@@ -212,6 +210,9 @@ per_mismatch <- round(((count_mismatch/countingtotal_stops_and_searches_after)*1
 
 
 ```{r data_processing_tables, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
+######################################################################################################################################################
+#Data processing: creating tables summarizing some of the most important results
+######################################################################################################################################################
 #Creates a dataframe with the total of stops and searches and the percentage of stops and searches to white and non-white people
 sum_total <- all_stops_and_searches %>%
   summarise(
@@ -223,7 +224,7 @@ sum_total <- all_stops_and_searches %>%
   ) %>%
   mutate(across(starts_with("%"), ~paste0(round(.x, 1), "%")))
 
-#Data frame with the total of stops and searches per borough   ###############################################################
+#Data frame with the total of stops
 sum_boroughs_table <- all_stops_and_searches %>%
   group_by(Borough) %>%
   summarise(
@@ -235,9 +236,7 @@ sum_boroughs_table <- all_stops_and_searches %>%
   ) %>%
   mutate(across(starts_with("%"), ~paste0(round(.x, 1), "%")))
 
-
-
-###################################################################################################################################################
+#Data frame with the total of stops and searches per borough 
 sum_total_table_presenting <- all_stops_and_searches %>%
   summarise(
     `% of ss to white people` = sum(cat_self_defined_ == "white", na.rm = TRUE) / n() * 100,
@@ -259,7 +258,7 @@ sumarize_table_all_ss <- datatable(sum_total_transposed_df,
           options = list(pageLength = FALSE, searching = FALSE, paging = FALSE), 
           caption = "Summarized data for all Stops and Searches")
 
-#Data frame with the total of stops and searches per borough   ###############################################################
+#Creating and interactive table with the total of stops and searches per borough and some of the most important results
 sum_boroughs_table_presenting <- all_stops_and_searches %>%
   group_by(Borough) %>%
   summarise(
@@ -269,7 +268,6 @@ sum_boroughs_table_presenting <- all_stops_and_searches %>%
     `% of arrests of non-white people over all ss` = sum(cat_self_defined_ != "white" & outcome == "Arrest", na.rm = TRUE) / n() * 100,
   ) %>%
   mutate(across(starts_with("%"), ~paste0(round(.x, 1), "%")))
-
 sumarize_table_boroughs_ss <- datatable(sum_boroughs_table_presenting, options = list(pageLength = 5), caption = "Summarized data for all Stops and Searches per Borough")
 
 
@@ -277,7 +275,14 @@ sumarize_table_boroughs_ss <- datatable(sum_boroughs_table_presenting, options =
 #sumarize_table_all_ss
 #sumarize_table_boroughs_ss
 
-#Plotting arrests per ethinicity and borough  #############################################################################################
+```
+
+
+
+```{r plots, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
+
+######################################################################################################################################################
+#Plotting arrests per ethnicity and borough: first create a data frame with the data to plot
 long_data <- sum_boroughs_table %>%
   pivot_longer(
     cols = c(`% of arrests of white people over all ss`, `% of arrests of non-white people over all ss`),
@@ -291,8 +296,7 @@ long_data <- sum_boroughs_table %>%
                        `% of arrests of non-white people over all ss` = "Non-White")
   )
 long_data$Arrests <- as.numeric(gsub("%", "", long_data$Arrests))
-
-# Plot the data
+# Plotting the data of arrest per ethnicity
 nfa <- ggplot(long_data, aes(x = Borough, y = Arrests, fill = Ethnicity)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
   labs(title = "Arrests per Ethnicity in SS by Borough",
@@ -304,18 +308,18 @@ nfa <- ggplot(long_data, aes(x = Borough, y = Arrests, fill = Ethnicity)) +
   theme_classic() +
   theme(axis.text.y = element_text(size = 8),
         axis.text.x = element_text(size = 8, angle = 90, vjust = 0.5, hjust=1))
-
 # Using Plotly for interactive plots
 nfa_plotly <- ggplotly(nfa)
 #nfa_plotly
 
-#Ploting per outcome of stops and searches #############################################################################################
+######################################################################################################################################################
+#Plotting the percentage of outcome of the SS per ethnicity:first create a data frame with the data to plot
 per_outcome_nw <- all_stops_and_searches %>%
   group_by(cat_self_defined_) %>%
   count(outcome) %>%
   mutate(percentage = n / sum(n) * 100) %>%
   ungroup()
-
+#Potting the data of the outcome of the SS per ethnicity (%of the total)
 plotoutcome <- ggplot(per_outcome_nw, aes(x = percentage, y = cat_self_defined_, fill = outcome)) +
   geom_bar(stat = "identity") +
   labs(title = "Outcome of SS by Ethnicity",
@@ -324,12 +328,11 @@ plotoutcome <- ggplot(per_outcome_nw, aes(x = percentage, y = cat_self_defined_,
   theme_classic() +
   scale_fill_brewer(palette = "Blues") +
   coord_flip()
-
 plotoutcome <- ggplotly(plotoutcome)
 #plotoutcome
 
-#Ploting the age range of the people stopped and searched per ethinicty #####################################################################
-#preparing the data for non white and white
+######################################################################################################################################################
+#Plotting the age range of the people stopped and searched per ethinicty:first create a data frame with the data to plot
 non_white_ages <- all_stops_and_searches %>%
   filter(cat_self_defined_ == "non_white") %>%
   count(age_range) %>% 
@@ -338,25 +341,21 @@ white_ages <- all_stops_and_searches %>%
   filter(cat_self_defined_ == "white") %>%
   count(age_range) %>% 
   mutate(percentage = n / sum(n) * 100) 
-
-#Plotting for non white
+#Plotting are range for non white
 nonwhite_age_plot <- ggplot(non_white_ages, aes(x = age_range, y = percentage)) +
   geom_bar(stat = "identity", fill = "#bec2a9") +
   labs(title = "SS Distribution by Age Group for Non-White",
        x = "Age Range",
        y = "SS of Detentions") +
   theme_minimal()
-
-#Plotting for  white
+#Plotting are range for  white
 white_age_plot <- ggplot(white_ages, aes(x = age_range, y = percentage)) +
   geom_bar(stat = "identity", fill = "#ADD8E6") +
   labs(title = "SS Distribution by Age Group for White",
        x = "Age Range",
        y = "Percentage of SS") +
   theme_minimal()
-
-#Combining plots 
-
+#Combining plots into one for better visualization
 combined_ages <- rbind(
   transform(non_white_ages, ethnicity = "Non-White"),
   transform(white_ages, ethnicity = "White")
@@ -371,12 +370,9 @@ age_plot <- ggplot(combined_ages, aes(x = age_range, y = percentage, fill = ethn
 #Maping the plot to plotly
 age_plot <- ggplotly(age_plot)
 #age_plot 
-```
 
-
-
-```{r obj_search_plots, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-#To get the percentage of stops and searches to white and non-white people per object of search per borough
+######################################################################################################################################################
+#Plotting the percentage of SS to white and non white per object of search per Borough: first create a data frame with the data to plot
 data_summary_obj_search <- all_stops_and_searches %>%
   mutate(category = ifelse(cat_self_defined_ == "white", "White", "Non-White")) %>%
   group_by(Borough, object_of_search, category) %>%
@@ -386,26 +382,25 @@ data_summary_obj_search <- all_stops_and_searches %>%
   group_by(Borough, category) %>%
   mutate(percentage = count / sum(count) * 100) %>% # Recalcular el porcentaje dentro de cada grupo
   ungroup()
+#Plotting the data of SS per object of search per Borough
+#colors_palette <- c( "red","darkred", "#990000",  "#bec2a9","#FF6347", "darkorange",  "grey50", "skyblue4", "#ADD8E6","#6495ED", "#5F9EA0",  "blue2") #Defining the colors for the plot
+#ob_search_perc_facet <- ggplot(data_summary_obj_search, aes(y = Borough, x = percentage, fill = object_of_search)) +
+#  geom_bar(stat = "identity", position = "fill") + # Usa "fill" aquí
+#  facet_wrap(~ category, scales = "free_x") +
+#  labs(title = "Object of SS Percentages by Self-Defined Ethnicity",
+#       y = "", 
+#       x = "Percentage", 
+#       fill = "Object of SS") +
+#  theme(axis.text.x = element_text(size = 6), #
+#        axis.text.y = element_text(size = 8), 
+#        legend.text = element_text(size = 7)) +
+#    scale_fill_manual(values = colors_palette) +
+#  theme_classic()
+#ob_search_perc_facet_interactive <- ggplotly(ob_search_perc_facet)
 
-colors_palette <- c( "red","darkred", "#990000",  "#bec2a9","#FF6347", "darkorange",  "grey50", "skyblue4", "#ADD8E6","#6495ED", "#5F9EA0",  "blue2")
-ob_search_perc_facet <- ggplot(data_summary_obj_search, aes(y = Borough, x = percentage, fill = object_of_search)) +
-  geom_bar(stat = "identity", position = "fill") + # Usa "fill" aquí
-  facet_wrap(~ category, scales = "free_x") +
-  labs(title = "Object of SS Percentages by Self-Defined Ethnicity",
-       y = "", 
-       x = "Percentage", 
-       fill = "Object of SS") +
-  theme(axis.text.x = element_text(size = 6), #
-        axis.text.y = element_text(size = 8), 
-        legend.text = element_text(size = 7)) +
-    scale_fill_manual(values = colors_palette) +
-  theme_classic()
-
-ob_search_perc_facet_interactive <- ggplotly(ob_search_perc_facet)
-
-# Percentage of object of search per all stops and searches  and rounded to 1 decimal place
-
-
+######################################################################################################################################################
+#Getting the top three object of search per all stops and searches and ethnicity
+# 1. Object of search for all stops and searches
 data_summary_obj_search_all_av <- all_stops_and_searches %>%
   group_by(object_of_search) %>%
   summarize(count = n(), .groups = "drop") %>%
@@ -414,15 +409,14 @@ data_summary_obj_search_all_av <- all_stops_and_searches %>%
     ethnicity = "All"
   ) %>%
   ungroup()
-
+# 2. Object of search for all white
 data_summary_obj_search_white_av <- all_stops_and_searches %>%
   filter(cat_self_defined_ == "white") %>%
   group_by(object_of_search) %>%
   summarize(count = n(), .groups = "drop") %>%
   mutate(percentage = round((count / sum(count) * 100),1), ethnicity = "White") %>%
   ungroup()
-
-
+# 3. Object of search for all stops and searches for all non white
 data_summary_obj_search_non_white_av <- all_stops_and_searches %>%
   filter(cat_self_defined_ == "non_white") %>%
   group_by(object_of_search) %>%
@@ -430,33 +424,31 @@ data_summary_obj_search_non_white_av <- all_stops_and_searches %>%
   mutate(percentage = round((count / sum(count) * 100),1), ethnicity = "Non_White") %>%
   ungroup()
 
-# Selecciona los 3 principales objetos de búsqueda para cada grupo
+#Getting for each group the top 3 objects of search
+# 1. Top 3 Object of search for all stops and searches
+
 top_3_obj_search_all_av <- data_summary_obj_search_all_av %>%
   arrange(desc(percentage)) %>%
   slice_head(n = 3)
-
+# 2. Top 3 Object of search for all white
 top_3_obj_search_white_av <- data_summary_obj_search_white_av %>%
   arrange(desc(percentage)) %>%
   slice_head(n = 3)
-
+# 3. Top 3 Object of search for all stops and searches for all non white
 top_3_obj_search_non_white_av <- data_summary_obj_search_non_white_av %>%
   arrange(desc(percentage)) %>%
   slice_head(n = 3)
 
-#Combine the top 3 objects of search for each group
+#Combining the data into one final data frame
 combined_top_3 <- bind_rows(top_3_obj_search_all_av, top_3_obj_search_white_av, top_3_obj_search_non_white_av)
 top_3_wide <- combined_top_3 %>%
   select(-count) %>%
   pivot_wider(names_from = ethnicity, values_from = percentage)
 colnames(top_3_wide) <- c("Object of SS", "All %", "White %", "Non White %")
-
-
-top_3_wide <- datatable(top_3_wide, 
+top_3_wide <- datatable(top_3_wide,  #
           options = list(pageLength = FALSE, searching = FALSE, paging = FALSE), 
           caption = "Top three Objects of SS per Ethnicity")
-
-#round the percentage to 2 decimals
-#Print the ta
+#Print the table
 #top_3_wide
 
 
@@ -465,15 +457,15 @@ top_3_wide <- datatable(top_3_wide,
 
 ```{r ss_mapping, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
 #Mapping the total of stops and searches per borough
-
+# Using the shape file for the london boroughs downloaded from https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london
 boroughs_map_sf <- st_read("./data/London_Borough_Excluding_MHW.shp")
 boroughs_map_sf <- st_transform(boroughs_map_sf, crs = 4326)
-
+#Union of the data which is in the shapefile and the data which is in the dataframe
 boroughs_map_sf <- boroughs_map_sf %>% #union of the data which is in the shapefile and the data which is in the dataframe
   left_join(sum_boroughs_table, by = c("NAME" = "Borough"))
-
+#Using the standard color palette for the maps on this work.
 color_pal <- colorNumeric(palette = "YlOrRd", domain = boroughs_map_sf$`Total of ss`, na.color = "#808080") #creating the color palette
-#creating the map
+#Creating the map using leaflet
 map_total_ss <- leaflet(boroughs_map_sf) %>% 
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -496,7 +488,6 @@ map_total_ss <- leaflet(boroughs_map_sf) %>%
     opacity = 0.7
   ) %>%
   setView(lng = -0.1278, lat = 51.5074, zoom = 10)
-
 #print the map of total stops and searches per borough
 #map_total_ss 
 
@@ -504,7 +495,7 @@ map_total_ss <- leaflet(boroughs_map_sf) %>%
 
 
 ```{r ss_dataprocessing, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-#For future maps we store a table with indicators for each borough
+#For future maps we store a table with indicators for each borough to be used
 sum_boroughs_table <- all_stops_and_searches %>%
   group_by(Borough) %>%
   summarise(
@@ -525,6 +516,7 @@ sum_boroughs_table <- all_stops_and_searches %>%
 
 ```{r ss_data_mapping, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
 #Map of the ratio of non-white people stopped and searched over all stops and searches per borough
+# Using the shape file for the london boroughs downloaded from https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london
 boroughs_map_sf <- st_read("./data/London_Borough_Excluding_MHW.shp")
 boroughs_map_sf <- st_transform(boroughs_map_sf, 4326)
 sum_boroughs <- all_stops_and_searches %>%
@@ -541,7 +533,7 @@ breaks <- c(0, .2, .4, .6, .8, 1)
 color_pal <- colorBin(palette = "YlOrRd", domain = na.omit(boroughs_map_sf$ratio_nonwhite_ss), bins = breaks, na.color = "#808080")
 boroughs_map_sf$color <- color_pal(boroughs_map_sf$ratio_nonwhite_ss)
 
-#Mapping
+##Creating the map using leaflet
 map_ratio_nonwhite <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -566,44 +558,29 @@ map_ratio_nonwhite <- leaflet(boroughs_map_sf) %>%
 ```
 
 
-```{r ss_and_population_data_procesing, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-#Mapping the ratio of ss over the population per borough
+```{r ss_and_population, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
+#To create Mapping the ratio of ss over the population per borough we need to process the data
+#Transforming the data to numeric in case it is not
 boroughs$`Population(2019 est)` <- as.numeric(gsub(",", "", boroughs$`Population(2019 est)`))
 sum_boroughs_table$total_non_white <- as.numeric(sum_boroughs_table$total_non_white)
 sum_boroughs_table$total_white <- as.numeric(sum_boroughs_table$total_white)
-
+#Joining the data with the population data by borough
 sum_boroughs_joined <- left_join(sum_boroughs_table, select(boroughs, Borough, `Population(2019 est)`), by = "Borough")
-
 sum_boroughs_joined$ratio_ss_population_nonwhite <- NULL
 sum_boroughs_joined$ratio_ss_population_white <- NULL
-
+#Creating the ratio of stops and searches per 1000 inhabitants for non-white and white people in london
 sum_boroughs_ratio <- sum_boroughs_joined %>%
   mutate(ratio_ss_population_nonwhite = (total_non_white / `Population(2019 est)`) * 1000,
          ratio_ss_population_white = (total_white / `Population(2019 est)`) * 1000)
-
+#Joining the data with the shape file
 boroughs_map_sf <- left_join(boroughs_map_sf, sum_boroughs_ratio, by = c("NAME" = "Borough"))
 boroughs_map_sf <- st_transform(boroughs_map_sf, 4326)
-
-```
-
-
-```{r ratios_ss_inhabitants, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-
 #Estimating the ratio of stops and searches per 1000 inhabitants for non-white and white people in london
 ratio_ss_nonwhite_hab <- (sum(sum_boroughs_joined$total_non_white))/ (sum(sum_boroughs_joined$`Population(2019 est)`))*1000
 ratio_ss_white_hab <- (sum(sum_boroughs_joined$total_white))/ (sum(sum_boroughs_joined$`Population(2019 est)`))*1000
-#cat("The ratio of stop and searches of non-white people in London is", round(ratio_ss_nonwhite_hab, 4), "per 1,000 inhabitants","\n")
-#cat("The ratio of stop and searches of white people in London is", round(ratio_ss_white_hab, 4), "per 1,000 inhabitants","\n")
-
-
-```
-
-```{r ss_and_population_data_mapping, echo=FALSE, warning=FALSE, include=FALSE, message=FALSE}
-
-#Mapping ss of non-white people over borough population (1000 inhabitants)
+#Creating the interactive map for non white SS per 1000 inhabitants using leaflet, asigning the standar color palette and the manual breaks/ranges
 breaks <- c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5,7, 7.5, 8, 8.5, 9, 9.5, 10,max(boroughs_map_sf$ratio_ss_population_nonwhite, na.rm = TRUE))
 color_pal <- colorNumeric(palette = "YlOrRd", domain = breaks, na.color = "#808080")
-# Mapping
 map_ratio_nonwhite_hab <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -627,12 +604,9 @@ map_ratio_nonwhite_hab <- leaflet(boroughs_map_sf) %>%
   ) %>%
   setView(lng = -0.1278, lat = 51.5074, zoom = 10)
 
-
-
-#Mapping ss of non-white people over borough population (1000 inhabitants)
+#Creating the interactive map for  white SS per 1000 inhabitants using leaflet, asigning the standar color palette and the manual breaks/ranges
 breaks <- c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5,7, 7.5, 8, 8.5, 9, 9.5, 10,max(boroughs_map_sf$ratio_ss_population_white, na.rm = TRUE))
 color_pal <- colorNumeric(palette = "YlOrRd", domain = breaks, na.color = "#808080")
-# Mapping
 map_ratio_white_hab <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -660,19 +634,20 @@ map_ratio_white_hab <- leaflet(boroughs_map_sf) %>%
 #map_ratio_nonwhite_hab #non-white people over total population
 #map_ratio_white_hab #white people over total population
 
-
 ```
 
 
-```{r unestructured_data_scrapping, echo=FALSE, include=FALSE, warning=FALSE, message=FALSE, evaluate=FALSE}
 
+```{r unestructured_data_scrapping, echo=FALSE, include=FALSE, warning=FALSE, message=FALSE, evaluate=FALSE}
+######################################################################################################################################################
+# Getting the ethnic population per Borough from the Census 2021
+######################################################################################################################################################
 download_path <- normalizePath(getwd(), winslash = "/")
 rD <- rsDriver(
   browser = "firefox",
   port = free_port(random = TRUE),
   chromever = NULL
 )
-
 # Start client
 remDr <- rD$client
 # Navigate to the web page
@@ -727,6 +702,7 @@ rD$server$stop()
 
 
 ```{r unestructured_data_formatting, include=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+#To recategorise the ethnicity label to white and nonwhite (if white in ethnicity = white)
 categorize_ethnicity <- function(ethnic_code) {
   if (grepl("^White", ethnic_code)) {
     return('white')
@@ -778,19 +754,17 @@ sum_boroughs_joined_ethnic <- sum_boroughs_joined_ethnic %>%
 boroughs_map_sf <- left_join(boroughs_map_sf, sum_boroughs_joined_ethnic, by = c("NAME" = "Borough"))
 boroughs_map_sf <- st_transform(boroughs_map_sf, 4326)
 
-
-
+#Ranges for the legend of nonwhite people
 breaks_nonwhite <- c(0,3,6,9,12,15,18,21,24,27,30)
 labels_nonwhite <- sapply(breaks_nonwhite, function(b) paste(round(b, 1)))
-
+#Ranges for the legend of white people
 breaks_white <-   c(0,3,6,9,12,15,18,21,24,27,30)
 labels_white <- sapply(breaks_white, function(b) paste(round(b, 1)))
-
+#color palette for non white and white people
 color_pal_nonwhite <- colorBin(palette = "YlOrRd", domain = na.omit(boroughs_map_sf$ratio_nonwhite_nonwhite), bins = breaks_nonwhite, na.color = "#808080")
 color_pal_white <- colorBin(palette = "YlOrRd", domain = na.omit(boroughs_map_sf$ratio_white_white), bins = breaks_white, na.color = "#808080")
 
 #MAPING THE TOTAL OF NON WHITE PEOPLE PER TOTAL NON WHITE INHABITANTS (RATIO OF NONWHITE NONWHITE)
-
 map_ratio_nonwhite <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -811,7 +785,6 @@ map_ratio_nonwhite <- leaflet(boroughs_map_sf) %>%
   setView(lng = -0.1278, lat = 51.5074, zoom = 10)
 
 # MAPING THE TOTAL OF  WHITE PEOPLE PER TOTAL  WHITE INHABITANTS (RATIO OF WHITE WHITE)
-
 map_ratio_white <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
@@ -835,9 +808,7 @@ map_ratio_white <- leaflet(boroughs_map_sf) %>%
 boroughs_map_sf <- st_read("./data/London_Borough_Excluding_MHW.shp")
 boroughs_map_sf <- st_transform(boroughs_map_sf, crs = 4326)
 boroughs_map_sf <- left_join(boroughs_map_sf, sum_ethnic_by_borough, by = c("NAME" = "Borough"))
-
-
-breaks <- c(15,20,25,30,35,40,45,50,55,60,65,70)
+breaks <- c(15,20,25,30,35,40,45,50,55,60,65,70) #Creating the ranges for the legend
 color_pal <- colorBin(palette = "YlOrRd", domain = na.omit(boroughs_map_sf$ratio_nonwhite_total), bins = breaks, na.color = "#808080")
 map_ratio_nonwhite_total <- leaflet(boroughs_map_sf) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
@@ -882,10 +853,10 @@ The following data and methods were used:
 
 #### Some considerations
 
-* The ethnicity of SS incidents relied on self-reported data because: 
+* The ethnicity for this analysis relied on self-reported data because: 
   * A significant number of records lack the ethnicity reported by officers.
   * Persistent discrepancies, especially in misclassifying non-whites as whites.
-* Ethnicity data from the UK Data API and Census were simplified into 'white' and 'non-white' categories.
+* Ethnicity data from the Police API and Census were simplified into 'white' and 'non-white' categories.
 * The study was limited to London Boroughs, excluding the City of London, with API data based on borough coordinates plus a one-mile radius.
 
 
