@@ -5,12 +5,14 @@
 
 - This repository contains an R Markdown (`.Rmd`) file dedicated to performing a Descriptive Analysis of Stops and Searches within London.
 - It also contains the final output as (`.html`) file. With a short report of 754 words about the most relevant findinds.
-- A `data` folder to replicate the interactive maps when running the code.
+- A `data` folder to replicate the data when running the code.
+  
 
 
 ### Data Folder
 
 The `data` folder is a key component of this repository, housing the Statistical GIS Boundary Files for London, which are sourced from the [London Datastore](https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london).
+It also contains the scrapped data from UK census and UK Police Data API and the `.Rmd` has the relative paths to run under this files in case is desired not to use the scrapping code.
 
 ### Analysis in R Markdown
 
