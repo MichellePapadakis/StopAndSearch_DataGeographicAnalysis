@@ -75,7 +75,6 @@ boroughs <- boroughs %>%
     lat = as.numeric(lat),
     lon = as.numeric(lon)
   )
-
 ```
 
 
@@ -83,71 +82,75 @@ boroughs <- boroughs %>%
 ######################################################################################################################################################
 #To get the data from the data police API, using the the boroughs lat and lon, and the date from Oct 2022 to 2023)
 ######################################################################################################################################################
+#Notes: even when code doesn’t take long to run, if needed, you can upload the data from the csv file in the data folder.
+#if needed, uncomment the following line and comment the rest of the code until line 153
+all_stops_and_searches <- read_csv("./data/all_stops_and_searches.csv")
 
-get_stop_and_search_data <- function(borough, lat, lon, year_month) {
-  response <- GET(
-    url = "https://data.police.uk/api/stops-street",
-    query = list(lat = lat, lng = lon, date = year_month)
-  )
-  if (status_code(response) == 200) {
-    data <- content(response, "parsed")
-    if (!is.null(data) && length(data) > 0) {
-      df <- map_df(data, ~{
-        tibble(
-          datetime = .x$datetime,
-          latitude = .x$location$latitude %||% NA,
-          longitude = .x$location$longitude %||% NA,
-          gender = .x$gender %||% NA,
-          age_range = .x$age_range %||% NA,
-          self_defined_ethnicity = .x$self_defined_ethnicity %||% NA,
-          officer_defined_ethnicity = .x$officer_defined_ethnicity %||% NA,
-          object_of_search = .x$object_of_search %||% NA,
-          outcome = .x$outcome %||% NA
-        )
-      }) %>% 
-      mutate(
-        Borough = borough,
-        Month = substr(year_month, 6, 7)
-      )
-    } else {
-      df <- tibble(
-        Borough = borough,
-        Month = substr(year_month, 6, 7),
-        datetime = NA,
-        latitude = NA,
-        longitude = NA,
-        gender = NA,
-        age_range = NA,
-        self_defined_ethnicity = NA,
-        officer_defined_ethnicity = NA,
-        object_of_search = NA,
-        outcome = NA
-      )
-    }
-    return(df)
-  } else {
-    warning(paste("Error in the request: ", status_code(response)))
-    return(tibble())
-  }
-}
-#create a sequence of dates from october 2022 to october 2023
-date_range <- seq(from = as.Date("2022-10-01"), to = as.Date("2023-10-31"), by = "1 month")
-date_strings <- format(date_range, "%Y-%m")
+#get_stop_and_search_data <- function(borough, lat, lon, year_month) {
+#  response <- GET(
+#    url = "https://data.police.uk/api/stops-street",
+#    query = list(lat = lat, lng = lon, date = year_month)
+#  )
+#  if (status_code(response) == 200) {
+#    data <- content(response, "parsed")
+#    if (!is.null(data) && length(data) > 0) {
+#      df <- map_df(data, ~{
+#        tibble(
+#          datetime = .x$datetime,
+#          latitude = .x$location$latitude %||% NA,
+#          longitude = .x$location$longitude %||% NA,
+#          gender = .x$gender %||% NA,
+#          age_range = .x$age_range %||% NA,
+#          self_defined_ethnicity = .x$self_defined_ethnicity %||% NA,
+#          officer_defined_ethnicity = .x$officer_defined_ethnicity %||% NA,
+#          object_of_search = .x$object_of_search %||% NA,
+#          outcome = .x$outcome %||% NA
+#        )
+#      }) %>% 
+#      mutate(
+#        Borough = borough,
+#        Month = substr(year_month, 6, 7)
+#      )
+#    } else {
+#      df <- tibble(
+#        Borough = borough,
+#        Month = substr(year_month, 6, 7),
+#        datetime = NA,
+#        latitude = NA,
+#        longitude = NA,
+#        gender = NA,
+#        age_range = NA,
+#        self_defined_ethnicity = NA,
+#        officer_defined_ethnicity = NA,
+#        object_of_search = NA,
+#        outcome = NA
+#      )
+#    }
+#    return(df)
+#  } else {
+#    warning(paste("Error in the request: ", status_code(response)))
+#    return(tibble())
+#  }
+#}
+##create a sequence of dates from october 2022 to october 2023
+#date_range <- seq(from = as.Date("2022-10-01"), to = as.Date("2023-10-31"), by = "1 month")
+#date_strings <- format(date_range, "%Y-%m")
 #initialize an empty tibble to store the data
-all_stops_and_searches <- tibble()
-#loop through the boroughs and dates to get the data
-for (i in seq_along(boroughs$Borough)) {
-  for (date in date_strings) {
-    borough_data <- get_stop_and_search_data(
-      borough = boroughs$Borough[i],
-      lat = boroughs$lat[i],
-      lon = boroughs$lon[i],
-      year_month = date
-    )
-   
-    all_stops_and_searches <- bind_rows(all_stops_and_searches, borough_data)
-  }
-}
+#all_stops_and_searches <- tibble()
+##loop through the boroughs and dates to get the data
+#for (i in seq_along(boroughs$Borough)) {
+#  for (date in date_strings) {
+#    borough_data <- get_stop_and_search_data(
+#      borough = boroughs$Borough[i],
+#      lat = boroughs$lat[i],
+#      lon = boroughs$lon[i],
+#      year_month = date
+#    )
+#   
+#    all_stops_and_searches <- bind_rows(all_stops_and_searches, borough_data)
+#  }
+#}
+
 #Counting na's in the ethnicity columns and counting the total of stops and searches before eliminating the na's
 na_count_self_defined_ethnicity <- sum(is.na(all_stops_and_searches$self_defined_ethnicity))
 na_count_officer_defined_ethnicity <- sum(is.na(all_stops_and_searches$officer_defined_ethnicity))
@@ -642,60 +645,63 @@ map_ratio_white_hab <- leaflet(boroughs_map_sf) %>%
 ######################################################################################################################################################
 # Getting the ethnic population per Borough from the Census 2021
 ######################################################################################################################################################
-download_path <- normalizePath(getwd(), winslash = "/")
-rD <- rsDriver(
-  browser = "firefox",
-  port = free_port(random = TRUE),
-  chromever = NULL
-)
+#Notes: even when the running time is not, relative path to the downladed files can be used. Uncomment the next line and comment the following ones to change the path
+path <-"./data/TS022_census.csv"
+ethnic_by_borough <- read.csv(path)
+#download_path <- normalizePath(getwd(), winslash = "/")
+#rD <- rsDriver(
+#  browser = "firefox",
+#  port = free_port(random = TRUE),
+#  chromever = NULL
+#)
 # Start client
-remDr <- rD$client
+#remDr <- rD$client
 # Navigate to the web page
-base_url <- "https://www.ons.gov.uk/datasets/TS022/editions/2021/versions/2"
-remDr$navigate(base_url)
-coverage_type <- remDr$findElement(using = "xpath", value = '//*[@id="coverage"]/dd[2]/button') #founds where to change the coverage type
-coverage_type$clickElement() #clicks on the coverage type button
-coverage_type_geography <- remDr$findElement(using = "xpath", value = '//*[@id="coverage-parent-search"]') #found the "Select all Lower Tier Local Authorities within a larger area"
-coverage_type_geography$clickElement() #clicks on the "Select all Lower Tier Local Authorities within a larger area"
-drop_menu <- remDr$findElement(using = "xpath", value = '//*[@id="larger-area-select"]') #founds the dropdown menu to select area type
-drop_menu$clickElement() #clicks on the dropdown menu
-drop_menu_area <- remDr$findElement(using = "xpath", value = ' //*[@id="larger-area-select"]/option[4] ') #founds the dropdown menu to select area type "regions"  
-drop_menu_area$clickElement() 
-area_selector <- remDr$findElement(using = "xpath", value = '//*[@id="parent-search"]')#Find where to input "London"
-area_selector$clickElement() #clicks on the area selector
-area_selector$clearElement()
-area_selector$sendKeysToElement(list("London")) #inputs "London" in the area selector
-area_selector <- remDr$findElement(using = "xpath", value = '//*[@id="search--parent"]/div/div/div[2]/span/span/button') #clicks on the search button
-area_selector$clickElement()
-add_london <- remDr$findElement(using = "xpath", value = '//*[@id="search--parent"]/div/div/div[3]/fieldset/ul/li/button') #find on the add button
-add_london$clickElement()
-continue_button <- remDr$findElement(using = "xpath", value = '//*[@id="main"]/div/div/div/div/form/button') #clicks on the continue button
-continue_button$clickElement()
-get_data <- remDr$findElement(using = "xpath", value = '//*[@id="main"]/div/div/div/div/form/button') #clicks on the "continue"get data button
-get_data$clickElement()
-Sys.sleep(5) 
-getcsv <- remDr$findElement(using = "xpath", value = '//*[@id="csv"]') #clicks on the csv data type download button
-getcsv$clickElement()
-downloadcsv <- remDr$findElement(using = "xpath", value = '//*[@id="get-data"]/div[1]/form/button')
-downloadcsv$clickElement()
+#base_url <- "https://www.ons.gov.uk/datasets/TS022/editions/2021/versions/2"
+#remDr$navigate(base_url)
+#coverage_type <- remDr$findElement(using = "xpath", value = '//*[@id="coverage"]/dd[2]/button') #founds where to change the coverage type
+#coverage_type$clickElement() #clicks on the coverage type button
+#coverage_type_geography <- remDr$findElement(using = "xpath", value = '//*[@id="coverage-parent-search"]') #found the "Select all Lower Tier Local Authorities within a larger area"
+#coverage_type_geography$clickElement() #clicks on the "Select all Lower Tier Local Authorities within a larger area"
+#drop_menu <- remDr$findElement(using = "xpath", value = '//*[@id="larger-area-select"]') #founds the dropdown menu to select area type
+#drop_menu$clickElement() #clicks on the dropdown menu
+#drop_menu_area <- remDr$findElement(using = "xpath", value = ' //*[@id="larger-area-select"]/option[4] ') #founds the dropdown menu to select area type "regions"  
+#drop_menu_area$clickElement() 
+#area_selector <- remDr$findElement(using = "xpath", value = '//*[@id="parent-search"]')#Find where to input "London"
+#area_selector$clickElement() #clicks on the area selector
+#area_selector$clearElement()
+#area_selector$sendKeysToElement(list("London")) #inputs "London" in the area selector
+#area_selector <- remDr$findElement(using = "xpath", value = '//*[@id="search--parent"]/div/div/div[2]/span/span/button') #clicks on the search button
+#area_selector$clickElement()
+#add_london <- remDr$findElement(using = "xpath", value = '//*[@id="search--parent"]/div/div/div[3]/fieldset/ul/li/button') #find on the add button
+#add_london$clickElement()
+#continue_button <- remDr$findElement(using = "xpath", value = '//*[@id="main"]/div/div/div/div/form/button') #clicks on the continue button
+#continue_button$clickElement()
+#get_data <- remDr$findElement(using = "xpath", value = '//*[@id="main"]/div/div/div/div/form/button') #clicks on the "continue"get data button
+#get_data$clickElement()
+#Sys.sleep(5) 
+#getcsv <- remDr$findElement(using = "xpath", value = '//*[@id="csv"]') #clicks on the csv data type download button
+#getcsv$clickElement()
+#downloadcsv <- remDr$findElement(using = "xpath", value = '//*[@id="get-data"]/div[1]/form/button')
+#downloadcsv$clickElement()
 
 # Identify the downloaded file
-home_directory <- path.expand("~")
+#home_directory <- path.expand("~")
 # Construct the relative path to the Downloads folder
 # This assumes that the Downloads folder is in the standard location
-downloads_folder <- file.path(home_directory, "Downloads")# Change this path to your actual default download path
+#downloads_folder <- file.path(home_directory, "Downloads")# Change this path to your actual default download path
 # Check for the downloaded file in the default download directory
-downloaded_files <- list.files(downloads_folder, pattern = "\\.csv$", full.names = TRUE)
+#downloaded_files <- list.files(downloads_folder, pattern = "\\.csv$", full.names = TRUE)
 # Assuming the downloaded file is the latest file
-latest_file_path <- downloaded_files[which.max(file.info(downloaded_files)$mtime)]
+#latest_file_path <- downloaded_files[which.max(file.info(downloaded_files)$mtime)]
 # Move the file to the desired directory
-desired_file_path <- file.path(download_path, basename(latest_file_path))
-file.rename(latest_file_path, desired_file_path)
+#desired_file_path <- file.path(download_path, basename(latest_file_path))
+#file.rename(latest_file_path, desired_file_path)
 # Read the CSV file into R from the new location
-ethnic_by_borough <- read.csv(desired_file_path)
+#ethnic_by_borough <- read.csv(desired_file_path)
 # Close the remote driver and stop the server
-remDr$close()
-rD$server$stop()
+#remDr$close()
+#rD$server$stop()
 
 
 ```
