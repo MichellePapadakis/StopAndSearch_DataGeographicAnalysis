@@ -83,7 +83,7 @@ boroughs <- boroughs %>%
 #To get the data from the data police API, using the the boroughs lat and lon, and the date from Oct 2022 to 2023)
 ######################################################################################################################################################
 #Notes: even when code doesn’t take long to run, if needed, you can upload the data from the csv file in the data folder.
-#if needed, uncomment the following line and comment the rest of the code until line 153
+#if needed, comment the following line and uncomment the rest of the code until line 153
 all_stops_and_searches <- read_csv("./data/all_stops_and_searches.csv")
 
 #get_stop_and_search_data <- function(borough, lat, lon, year_month) {
@@ -135,7 +135,7 @@ all_stops_and_searches <- read_csv("./data/all_stops_and_searches.csv")
 ##create a sequence of dates from october 2022 to october 2023
 #date_range <- seq(from = as.Date("2022-10-01"), to = as.Date("2023-10-31"), by = "1 month")
 #date_strings <- format(date_range, "%Y-%m")
-#initialize an empty tibble to store the data
+##initialize an empty tibble to store the data
 #all_stops_and_searches <- tibble()
 ##loop through the boroughs and dates to get the data
 #for (i in seq_along(boroughs$Borough)) {
@@ -645,7 +645,7 @@ map_ratio_white_hab <- leaflet(boroughs_map_sf) %>%
 ######################################################################################################################################################
 # Getting the ethnic population per Borough from the Census 2021
 ######################################################################################################################################################
-#Notes: even when the running time is not, relative path to the downladed files can be used. Uncomment the next line and comment the following ones to change the path
+#Notes: even when the running time is not, relative path to the downloaded files can be used. Comment the next line and uncomment the following ones to change the path
 path <-"./data/TS022_census.csv"
 ethnic_by_borough <- read.csv(path)
 #download_path <- normalizePath(getwd(), winslash = "/")
